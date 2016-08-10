@@ -117,3 +117,9 @@ canvas {
   right: 23px;
   text-transform: uppercase;
 }
+/* line 43, ../scss/content.scss */
+.wrapper span.hi_score {
+  left: 23px;
+  position: absolute;
+  top: 3px;
+}

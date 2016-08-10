@@ -48,6 +48,27 @@ game.updateLevel = function() {
     document.getElementById('level').innerHTML = this.level;
 };
 
+game.setHiScore = function() {
+    if (typeof localStorage !== 'undefined') {
+        try {
+            if (game.score > localStorage.getItem('hiScore')) {
+                localStorage.setItem('hiScore', game.score);
+                document.getElementById('hi_score').innerHTML = localStorage.getItem('hiScore');
+            }
+        } catch(e) {
+        }
+    } else {
+    }
+};
+game.getHiScore = function() {
+    if (typeof localStorage !== 'undefined') {
+        if (localStorage.getItem('hiScore')) {
+            document.getElementById('hi_score').innerHTML = localStorage.getItem('hiScore');
+        }
+    }
+};
+
+
 canvas.drawBorder = function () {
     canvas.context.fillStyle = "Black";
     canvas.context.fillRect(0, 0, width, cw);
@@ -119,6 +140,7 @@ Snake.prototype.move = function() {
     this.segments.unshift(newELEMENT);
     if (newELEMENT.equal(food.position)) {
         game.score++;
+        game.setHiScore();
         game.speed++;
         food.move();
         snake.speed();
@@ -186,12 +208,11 @@ Food.prototype.move = function() {
     this.position = new ELEMENT(randomCol, randomRow);
 };
 
-
-
 // Create Objects
 
 var snake = new Snake();
 var food = new Food();
+game.getHiScore();
 
 var intervalId = setInterval(function () {
     ctx.clearRect(0, 0, width, height);
@@ -210,6 +231,7 @@ var directions = {
     40: "down"
 };
 
+var flag = false;
 
 game.gameOver = function () {
     window.clearInterval(intervalId);
@@ -218,15 +240,17 @@ game.gameOver = function () {
     canvas.context.textAlign = "center";
     canvas.context.textBaseLine = "middle";
     canvas.context.fillText("Game over", width / 2, height / 2);
+    flag = true;
+    game.setHiScore();
     return false;
 };
 
-
-
 // press the key
 document.addEventListener('keydown', function(event) {
+    if (flag === false) {
         var newDir = directions[event.keyCode];
         if (newDir !== undefined) {snake.setDirection(newDir)}
+    }
 }, false);
 
 
