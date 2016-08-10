@@ -14,10 +14,6 @@ var cw = canvas.cellWidth;
 var widthInELEMENTs = width / cw;
 var heightInELEMENTs = height / cw;
 
-canvas.redraw = function(){
-    this.draw(0, 0, '#99cc99', 'black', this.width, this.height);
-};
-
 canvas.draw = function(x, y, fillCol, strokeColour, width, height) {
     this.context.fillStyle = fillCol;
     this.context.fillRect(x*canvas.cellWidth, y*canvas.cellWidth, width, height);
