@@ -30,7 +30,6 @@ canvas.draw = function(x, y, fillCol, strokeColour, width, height) {
     this.context.fillRect(width - canvas.cellWidth, 0, canvas.cellWidth, height);
 };
 
-
 var game = new Object();
 game.score = 0;
 game.speed = 1;
@@ -98,46 +97,136 @@ Snake.prototype.draw = function() {
 
 
 
-
-// todo
-
 Snake.prototype.move = function() {
+    var head = this.segments[0];
+    var newELEMENT;
 
+    this.direction = this.nextDirection;
+
+    if (this.direction === "right") {
+        newELEMENT = new ELEMENT(head.col + 1, head.row);
+    } else if (this.direction === "down"){
+        newELEMENT = new ELEMENT(head.col, head.row + 1);
+    } else if(this.direction === "left"){
+        newELEMENT = new ELEMENT(head.col - 1, head.row);
+    } else if(this.direction === "up"){
+        newELEMENT = new ELEMENT(head.col, head.row - 1);
+    }
+    if (this.checkConflict(newELEMENT)){
+        game.gameOver();
+        return;
+    }
+    this.segments.unshift(newELEMENT);
+    if (newELEMENT.equal(food.position)) {
+        game.score++;
+        game.speed++;
+        food.move();
+        snake.speed();
+        game.setScore();
+        game.updateLevel();
+        return false;
+    } else{
+        this.segments.pop();
+    }
+};
+
+Snake.prototype.speed = function() {
+    window.clearInterval(intervalId);
+    var speedArg = 2000 / (game.frequency - game.speed);
+    var updateInterval = setInterval(function () {
+        ctx.clearRect(0, 0, width, height);
+        snake.move();
+        snake.draw();
+        food.draw();
+        canvas.drawBorder();
+    }, speedArg);
 };
 
 Snake.prototype.checkConflict = function(head) {
+    var leftConflict = (head.col === 0);
+    var topConflict = (head.row === 0);
+    var rightConflict = (head.col === widthInELEMENTs - 1);
+    var bottomConflict = (head.row === heightInELEMENTs - 1);
 
+    var wallConflict = leftConflict || topConflict || rightConflict || bottomConflict;
+    var selfConflict = false;
+
+    for (var i = 0; i < this.segments.length; i++) {
+        if (head.equal(this.segments[i])) {
+            selfConflict = true;
+        }
+    }
+    return wallConflict || selfConflict;
 };
 
 Snake.prototype.setDirection = function(newDirection) {
-
+    if (this.direction === "up" && newDirection === "down") {
+        return;
+    } else if(this.direction === "right" && newDirection === "left"){
+        return;
+    } else if(this.direction === "down" && newDirection === "up"){
+        return;
+    } else if(this.direction === "left" && newDirection === "right"){
+        return;
+    }
+    this.nextDirection = newDirection;
 };
 
 var Food = function () {
-
+    this.position = new ELEMENT(10, 10);
 };
 
 Food.prototype.draw = function() {
-
+    this.position.drawSquare("black");
 };
 
 Food.prototype.move = function() {
-
+    var randomCol = Math.floor(Math.random() * (widthInELEMENTs - 2)) + 1;
+    var randomRow = Math.floor(Math.random() * (heightInELEMENTs - 2)) + 1;
+    this.position = new ELEMENT(randomCol, randomRow);
 };
+
+
+
+// Create Objects
 
 var snake = new Snake();
 var food = new Food();
 
+var intervalId = setInterval(function () {
+    ctx.clearRect(0, 0, width, height);
+    snake.move();
+    snake.draw();
+    food.draw();
+    canvas.drawBorder();
+}, 2000 / game.frequency);
+
+
+// keys
+var directions = {
+    37: "left",
+    38: "up",
+    39: "right",
+    40: "down"
+};
+
+
+game.gameOver = function () {
+    window.clearInterval(intervalId);
+    canvas.context.font = "24px Courier";
+    canvas.context.fillStyle = "Black";
+    canvas.context.textAlign = "center";
+    canvas.context.textBaseLine = "middle";
+    canvas.context.fillText("Game over", width / 2, height / 2);
+    return false;
+};
 
 
 
-
+// press the key
 document.addEventListener('keydown', function(event) {
-
-
-    if(event.keyCode == 32){
-        // todo
-
-    }
+        var newDir = directions[event.keyCode];
+        if (newDir !== undefined) {snake.setDirection(newDir)}
 }, false);
+
 
